@@ -1,0 +1,10 @@
+# python libraries needed
+openai
+joblib
+matplotlib
+scipy
+numpy
+mne
+scikit-learn
+gradio
+python-dotenv
