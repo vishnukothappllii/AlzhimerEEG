@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depression Analysis - NeuroDetect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-graph-page.css') }}">
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Depression Page Theme (Orange/Amber Accents) */
+        .theme-accent-color { color: #F7931E; }
+        .theme-accent-border { border-color: #F7931E; }
+        .theme-accent-bg { background-color: #F7931E; }
+
+        /* Circular Progress */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 1.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Report Styles */
+        .report-container {
+            padding: 40px;
+            background: #0f1329;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Modern Input Styles (Matching index.html) */
+        .modern-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(15, 19, 41, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 5px 20px;
+            transition: all 0.3s ease;
+            flex-grow: 1;
+        }
+        
+        .modern-input-wrapper:focus-within {
+            border-color: #F7931E; /* Orange accent for depression page */
+            box-shadow: 0 0 15px rgba(247, 147, 30, 0.2);
+            background: rgba(15, 19, 41, 0.8);
+        }
+
+        .modern-input-icon {
+            font-size: 20px;
+            color: #a0a0a0;
+            margin-right: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .modern-input-wrapper:focus-within .modern-input-icon {
+            color: #F7931E;
+        }
+
+        .modern-input-field {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            padding: 12px 0;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .modern-input-field::placeholder {
+            color: #505050;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff; color: #000; }
+            .dashboard-section { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar" class="no-print">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-8h2v13H7zm4-2h2v15h-2zm4 4h2v11h-2zm4-2h2v13h-2z"/></svg>
+                </div>
+                <span class="logo-text">NeuroDetect</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <ul class="nav-links-mobile" id="navLinksMobile">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Section -->
+    <section class="dashboard-section" style="min-height: 100vh;">
+        <div class="dashboard-container" style="padding-top: 80px;">
+            
+            <!-- Header Controls (No Print) -->
+            <div class="no-print" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                 <a href="{{ url_for('eeg_interface') }}" style="color: #a0a0a0; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Analysis
+                 </a>
+                 <!-- New "Check Another EEG" Button Top Right -->
+                 <a href="{{ url_for('eeg_interface') }}" class="cta-button" style="padding: 10px 20px; font-size: 14px; background: rgba(255,255,255,0.1); box-shadow: none; border: 1px solid rgba(255,255,255,0.2);">
+                    Check Another EEG
+                 </a>
+            </div>
+
+            <!-- Modern Report Input Bar (Not Printed) -->
+            <div class="no-print" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; margin-bottom: 40px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between;">
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; max-width: 500px;">
+                    <label style="color: #a0a0a0; font-size: 13px; margin-left: 5px; text-transform: uppercase; letter-spacing: 1px;">Patient Name for Report</label>
+                    <div class="modern-input-wrapper">
+                        <div class="modern-input-icon">👤</div>
+                        <input type="text" id="patientInput" class="modern-input-field" placeholder="e.g. John Doe" autocomplete="off">
+                    </div>
+                </div>
+
+                <button onclick="generatePDF()" class="cta-button" style="height: 50px; display: flex; align-items: center; gap: 10px; margin-top: auto; background: linear-gradient(135deg, #F7931E, #FFBC6B); box-shadow: 0 4px 15px rgba(247, 147, 30, 0.3);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download Depression Report
+                </button>
+            </div>
+
+            <!-- REPORT CONTAINER -->
+            <div id="report-container" class="report-container">
+                
+                <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid rgba(247, 147, 30, 0.3); padding-bottom: 20px;">
+                    <h1 style="color: #F7931E; margin-bottom: 5px;">Depression Risk Analysis</h1>
+                    <p style="color: #a0a0a0;">NeuroDetect EEG Mood Assessment Module</p>
+                </div>
+
+                <!-- Patient Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
+                    <div class="info-card" style="text-align: left;">
+                        <h4 style="color: #a0a0a0; font-size: 12px;">PATIENT</h4>
+                        <p id="report-patient-name" style="font-size: 18px; color: #fff;">Guest</p>
+                    </div>
+                    <div class="info-card" style="text-align: left;">
+                        <h4 style="color: #a0a0a0; font-size: 12px;">FILE ID</h4>
+                        <p style="font-size: 18px; color: #fff;">{{ filename }}</p>
+                    </div>
+                </div>
+
+                <!-- Main Gauge -->
+                <div style="text-align: center; margin-bottom: 50px;">
+                    <div style="position: relative; width: 200px; height: 200px; margin: 0 auto;">
+                        <svg width="200" height="200">
+                            <circle stroke="rgba(255,255,255,0.1)" stroke-width="15" fill="transparent" r="85" cx="100" cy="100"/>
+                            <circle class="progress-ring__circle" 
+                                    stroke="{% if depression_prob > 50 %} #F7931E {% else %} #00ffcc {% endif %}" 
+                                    stroke-width="15" 
+                                    stroke-dasharray="534 534" 
+                                    stroke-dashoffset="{{ 534 - (534 * depression_prob / 100) }}"
+                                    stroke-linecap="round" 
+                                    fill="transparent" r="85" cx="100" cy="100"/>
+                        </svg>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <span style="font-size: 36px; font-weight: bold; color: #fff;">{{ depression_prob | round }}%</span>
+                            <div style="font-size: 10px; color: #a0a0a0;">RISK PROBABILITY</div>
+                        </div>
+                    </div>
+                    <h2 style="margin-top: 20px; color: {% if depression_prob > 50 %} #F7931E {% else %} #00ffcc {% endif %};">
+                        {% if depression_prob > 50 %} Indication of Depressive Pattern {% else %} Normal Mood Pattern {% endif %}
+                    </h2>
+                    <p style="color: #ccc; max-width: 600px; margin: 10px auto;">
+                        Analysis based on Alpha Asymmetry Index (O1 vs O2). Higher hemispheric imbalance is often correlated with mood disorders.
+                    </p>
+                </div>
+
+                <!-- Technical Data -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; page-break-inside: avoid;">
+                    <div>
+                        <h3 style="border-left: 3px solid #F7931E; padding-left: 10px; color: #fff;">Biomarker Data</h3>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span style="color: #a0a0a0;">Alpha Power (Left/O1)</span>
+                                <span style="font-family: monospace; color: #fff;">{{ "{:.4e}".format(features.alpha_O1) }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                                <span style="color: #a0a0a0;">Alpha Power (Right/O2)</span>
+                                <span style="font-family: monospace; color: #fff;">{{ "{:.4e}".format(features.alpha_O2) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                         <h3 style="border-left: 3px solid #F7931E; padding-left: 10px; color: #fff;">Visual</h3>
+                         <div style="margin-top: 15px; background: #fff; padding: 5px; border-radius: 10px;">
+                             <img src="data:image/png;base64,{{ eeg_image }}" style="width: 100%;">
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Recommendations -->
+                 <h3 style="margin-top: 40px; color: #fff; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Clinical & Lifestyle Recommendations</h3>
+                 
+                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 25px;">
+                    {% if depression_prob > 50 %}
+                        <!-- High Risk Suggestions -->
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #F7931E; padding: 25px;">
+                            <div style="color: #F7931E; font-size: 24px; margin-bottom: 10px;">🩺</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Psychiatric Evaluation</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Strong recommendation for a formal clinical interview using standardized tools (e.g., PHQ-9, HAM-D) to confirm diagnosis and determine severity.
+                            </p>
+                        </div>
+
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #F7931E; padding: 25px;">
+                            <div style="color: #F7931E; font-size: 24px; margin-bottom: 10px;">💤</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Sleep Architecture Analysis</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Check for reduced REM latency and fragmented sleep patterns. Consider polysomnography if sleep disturbances are reported.
+                            </p>
+                        </div>
+
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #FFBC6B; padding: 25px;">
+                            <div style="color: #FFBC6B; font-size: 24px; margin-bottom: 10px;">🧘</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Mindfulness-Based Therapy</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Initiate Mindfulness-Based Cognitive Therapy (MBCT) to regulate frontal alpha asymmetry. Practices like meditation can increase left frontal activation.
+                            </p>
+                        </div>
+
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #FFBC6B; padding: 25px;">
+                            <div style="color: #FFBC6B; font-size: 24px; margin-bottom: 10px;">🏃</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Physical Activation</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Prescribe moderate aerobic exercise (30 mins/day). Exercise promotes neuroplasticity and release of endorphins/BDNF, counteracting depressive symptoms.
+                            </p>
+                        </div>
+
+                    {% else %}
+                        <!-- Low Risk Suggestions -->
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #00ffcc; padding: 25px;">
+                            <div style="color: #00ffcc; font-size: 24px; margin-bottom: 10px;">🛡️</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Preventative Maintenance</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Continue current mental wellness routines. The alpha asymmetry index is within normal limits, suggesting balanced hemispheric regulation.
+                            </p>
+                        </div>
+                        
+                        <div class="info-card" style="text-align: left; border-left: 4px solid #00ccff; padding: 25px;">
+                            <div style="color: #00ccff; font-size: 24px; margin-bottom: 10px;">🥗</div>
+                            <h4 style="color: #fff; margin-bottom: 8px;">Nutritional Support</h4>
+                            <p style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">
+                                Maintain a balanced diet rich in Omega-3 fatty acids and Vitamin D to support long-term neurological health and mood stability.
+                            </p>
+                        </div>
+                    {% endif %}
+                 </div>
+
+                 <div style="margin-top: 40px; text-align: center; font-size: 10px; color: #555; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    Report generated automatically by NeuroDetect AI on <script>document.write(new Date().toLocaleDateString())</script>
+                 </div>
+            </div>
+            
+            <!-- Prominent Action Button at Bottom -->
+            <div style="text-align: center; margin-top: 60px;" class="no-print">
+                <a href="{{ url_for('eeg_interface') }}" class="cta-button" style="font-size: 18px; padding: 15px 40px; background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%); box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); border: none;">
+                    Check Another EEG
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        function generatePDF() {
+            const name = document.getElementById('patientInput').value;
+            if(name) document.getElementById('report-patient-name').innerText = name;
+            const element = document.getElementById('report-container');
+            const opt = {
+                margin: 0.5,
+                filename: 'Depression_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f1329' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>

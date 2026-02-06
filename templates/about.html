@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About the Project - NeuroDetect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-graph-page.css') }}">
+    <style>
+        /* Workflow / Dataflow Diagram Styles */
+        .workflow-section {
+            padding: 80px 0;
+            position: relative;
+        }
+        
+        .workflow-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, rgba(0,255,204,0) 0%, rgba(0,255,204,0.5) 20%, rgba(0,255,204,0.5) 80%, rgba(0,255,204,0) 100%);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .flow-step {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .flow-card {
+            background: rgba(15, 19, 41, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            width: 45%;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .flow-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 255, 204, 0.4);
+            box-shadow: 0 15px 40px rgba(0, 255, 204, 0.1);
+        }
+
+        /* Alternating Layout */
+        .flow-step:nth-child(odd) { flex-direction: row; }
+        .flow-step:nth-child(even) { flex-direction: row-reverse; }
+        
+        .flow-step:nth-child(odd) .flow-card { margin-right: 50px; text-align: right; }
+        .flow-step:nth-child(even) .flow-card { margin-left: 50px; text-align: left; }
+
+        /* Connecting Nodes on the Line */
+        .flow-node {
+            position: absolute;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: #0a0e27;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 15px #00ffcc;
+            z-index: 2;
+        }
+
+        .flow-icon-large {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .flow-step:nth-child(even) .flow-icon-large {
+            float: left;
+            margin-right: 20px;
+            margin-bottom: 0;
+        }
+        
+        .flow-step:nth-child(odd) .flow-icon-large {
+            float: right;
+            margin-left: 20px;
+            margin-bottom: 0;
+        }
+
+        /* Clear floats */
+        .flow-card::after { content: ""; display: table; clear: both; }
+
+        @media (max-width: 768px) {
+            .workflow-line { left: 30px; }
+            .flow-step { flex-direction: column !important; align-items: flex-start; padding-left: 60px; }
+            .flow-card { width: 100%; margin: 0 0 30px 0 !important; text-align: left !important; }
+            .flow-node { left: 30px; }
+            .flow-icon-large { float: none !important; margin: 0 0 15px 0 !important; display: block; }
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-8h2v13H7zm4-2h2v15h-2zm4 4h2v11h-2zm4-2h2v13h-2z"/></svg>
+                </div>
+                <span class="logo-text">NeuroDetect</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <ul class="nav-links-mobile" id="navLinksMobile">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+            <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" style="min-height: 50vh;">
+        <div class="hero-bg"></div>
+        <div class="hero-content" style="display: block; text-align: center; padding-top: 100px;">
+            <h1 style="font-size: 48px; margin-bottom: 20px; background: linear-gradient(135deg, #ffffff 0%, #00ffcc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                System Architecture
+            </h1>
+            <p style="color: #a0a0a0; font-size: 18px; max-width: 700px; margin: 0 auto;">
+                A transparent look at how NeuroDetect transforms raw EEG signals into actionable diagnostic insights using advanced machine learning.
+            </p>
+        </div>
+    </section>
+
+    <!-- Workflow Diagram Section -->
+    <section class="dashboard-section" style="background: linear-gradient(180deg, #0a0e27 0%, #0f1329 100%); padding-top: 0;">
+        <div class="dashboard-container">
+            
+            <div class="workflow-section">
+                <div class="workflow-line"></div>
+
+                <!-- Step 1: Data Ingestion -->
+                <div class="flow-step">
+                    <div class="flow-node">1</div>
+                    <div class="flow-card" style="border-top: 3px solid #00ffcc;">
+                        <div class="flow-icon-large" style="color: #00ffcc;">📂</div>
+                        <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Signal Acquisition</h3>
+                        <p style="color: #a0a0a0; line-height: 1.6;">
+                            The pipeline begins by ingesting standard <strong>.set EEG files</strong> (EEGLAB format). The system loads the raw voltage data along with channel location information, specifically isolating the Frontal (Fz) and Occipital (O1, O2) electrodes required for our targeted analysis.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Preprocessing & Plotting -->
+                <div class="flow-step">
+                    <div class="flow-node">2</div>
+                    <div class="flow-card" style="border-top: 3px solid #00ccff;">
+                        <div class="flow-icon-large" style="color: #00ccff;">📉</div>
+                        <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Preprocessing & Viz</h3>
+                        <p style="color: #a0a0a0; line-height: 1.6;">
+                            Raw signals are filtered to remove noise and artifacts.  The system generates a real-time time-domain plot for visual verification. This step ensures that the data is clean and valid before any mathematical feature extraction occurs.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3: Feature Engineering -->
+                <div class="flow-step">
+                    <div class="flow-node">3</div>
+                    <div class="flow-card" style="border-top: 3px solid #ff0080;">
+                        <div class="flow-icon-large" style="color: #ff0080;">⚙️</div>
+                        <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Feature Extraction</h3>
+                        <p style="color: #a0a0a0; line-height: 1.6;">
+                            Mathematical transformation of time-series data into biomarkers:
+                            <br>• <strong>Alpha Power:</strong> Using FFT to calculate power density in the 8-12Hz band.
+                            <br>• <strong>Coherence:</strong> Measuring signal synchronization between Anterior (Fz) and Posterior (O1/O2) regions.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Centroid Classification -->
+                <div class="flow-step">
+                    <div class="flow-node">4</div>
+                    <div class="flow-card" style="border-top: 3px solid #ffcc00;">
+                        <div class="flow-icon-large" style="color: #ffcc00;">🧠</div>
+                        <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Centroid Classification</h3>
+                        <p style="color: #a0a0a0; line-height: 1.6;">
+                            The extracted feature vector is mapped into multi-dimensional space. The <strong>Nearest Centroid Classifier</strong> calculates the Euclidean distance to the "Average Healthy Brain" and "Average Alzheimer's Brain" centroids to determine the most probable class.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 5: Depression Analysis (New) -->
+                <div class="flow-step">
+                    <div class="flow-node">5</div>
+                    <div class="flow-card" style="border-top: 3px solid #F7931E;">
+                        <div class="flow-icon-large" style="color: #F7931E;">🧩</div>
+                        <h3 style="color: #fff; font-size: 22px; margin-bottom: 10px;">Depression Prediction</h3>
+                        <p style="color: #a0a0a0; line-height: 1.6;">
+                            <strong>New Module:</strong> To rule out pseudodementia, the system performs a secondary analysis on Alpha Asymmetry. 
+                                                        Reduced activity in the Left Frontal lobe compared to the Right Frontal lobe is flagged as a potential indicator of Depression, providing a more holistic cognitive profile.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Goals (Preserved with Modern Styling) -->
+    <section class="dashboard-section" style="background: #0a0e27;">
+        <div class="dashboard-container">
+            <h2 class="section-title">Core Objectives</h2>
+            <div class="stats-grid">
+                <div class="stat-card" style="text-align: center;">
+                    <div class="stat-icon" style="margin: 0 auto 20px;">🎯</div>
+                    <div class="stat-title">High Accuracy</div>
+                    <div class="stat-description">Leveraging clinically validated biomarkers to ensure reliable screening results.</div>
+                </div>
+                <div class="stat-card" style="text-align: center;">
+                    <div class="stat-icon" style="margin: 0 auto 20px;">⚡</div>
+                    <div class="stat-title">Real-Time Speed</div>
+                    <div class="stat-description">Optimized algorithms process 20 epochs in seconds for immediate feedback.</div>
+                </div>
+                <div class="stat-card" style="text-align: center;">
+                    <div class="stat-icon" style="margin: 0 auto 20px;">🏥</div>
+                    <div class="stat-title">Accessibility</div>
+                    <div class="stat-description">Democratizing advanced neurological analysis via a simple web interface.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p class="copyright">© 2025 NeuroDetect Project</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/templatemo-graph-script.js') }}"></script>
+</body>
+</html>

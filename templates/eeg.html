@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEG Analysis Workspace - NeuroDetect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-graph-page.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-8h2v13H7zm4-2h2v15h-2zm4 4h2v11h-2zm4-2h2v13h-2z"/></svg>
+                </div>
+                <span class="logo-text">NeuroDetect</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <ul class="nav-links-mobile" id="navLinksMobile">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="dashboard-section" style="min-height: 100vh;">
+        <div class="dashboard-container" style="padding-top: 80px;">
+            
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 class="section-title">EEG Analysis Workspace</h2>
+                <p style="color: #a0a0a0;">Upload .set files to visualize signals and extract neurological features</p>
+            </div>
+
+            <!-- 1. UPLOAD SECTION -->
+            <div class="contact-form" style="max-width: 800px; margin: 0 auto 50px auto;">
+                <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 20px;">
+                    <input type="hidden" name="action" value="upload">
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="file-upload" style="margin-bottom: 15px;">Select EEG Dataset (.set)</label>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <input type="file" id="file-upload" name="file" accept=".set" required 
+                                   style="flex-grow: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff;">
+                            <button type="submit" class="cta-button" style="border: none; flex-shrink: 0;">
+                                Upload Dataset
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if filename %}
+            <!-- Active File Indicator -->
+            <div class="stat-card" style="margin-bottom: 40px; text-align: center; border-color: rgba(0, 255, 204, 0.3);">
+                <div class="stat-title" style="color: #00ffcc; margin-bottom: 5px;">Active Session</div>
+                <div class="stat-value" style="font-size: 24px;">{{ filename }}</div>
+            </div>
+
+            <!-- 2. WAVEFORM PLOT -->
+            {% if eeg_image %}
+            <div style="margin-bottom: 50px;">
+                <h3 class="info-title" style="margin-bottom: 20px; border-left: 4px solid #00ffcc; padding-left: 15px;">Signal Visualization</h3>
+                <div class="chart-card" style="padding: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.02);">
+                    <!-- Image styling to blend better with dark theme -->
+                    <img src="data:image/png;base64,{{ eeg_image }}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
+                </div>
+            </div>
+            
+            <!-- 3. FEATURE EXTRACTION GRID -->
+            <div class="contact-grid" style="margin-bottom: 50px; gap: 30px; align-items: stretch;">
+                
+                <!-- Extraction Control -->
+                <div class="info-card" style="text-align: left; display: flex; flex-direction: column;">
+                    <div class="info-icon">⚙️</div>
+                    <h3 class="info-title">Feature Engineering</h3>
+                    <p style="color: #a0a0a0; margin-bottom: 20px; flex-grow: 1;">
+                        Process the raw EEG signal to calculate Spectral Power Density in the Alpha band (8-12 Hz) and Functional Connectivity (Coherence) between regions.
+                    </p>
+                    
+                    <form method="POST" style="margin-top: auto;">
+                        <input type="hidden" name="action" value="extract">
+                        <input type="hidden" name="filename" value="{{ filename }}">
+                        <button class="cta-button" style="width: 100%; background: linear-gradient(135deg, #6b73ff, #000dff);">
+                            Extract Features
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Features Display -->
+                <div class="info-card" style="text-align: left;">
+                    <div class="info-icon">📊</div>
+                    <h3 class="info-title">Extracted Metrics</h3>
+                    
+                    {% if features %}
+                        <div style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span style="color: #a0a0a0;">Alpha Power (O1)</span>
+                                <span style="color: #00ffcc; font-family: monospace; font-weight: bold;">{{ "{:.6e}".format(features.alpha_O1) }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span style="color: #a0a0a0;">Alpha Power (O2)</span>
+                                <span style="color: #00ffcc; font-family: monospace; font-weight: bold;">{{ "{:.6e}".format(features.alpha_O2) }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span style="color: #a0a0a0;">Coherence (O1 → Fz)</span>
+                                <span style="color: #00ffcc; font-family: monospace; font-weight: bold;">{{ features.coherence_O1_Fz | round(4) }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                                <span style="color: #a0a0a0;">Coherence (O2 → Fz)</span>
+                                <span style="color: #00ffcc; font-family: monospace; font-weight: bold;">{{ features.coherence_O2_Fz | round(4) }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="height: 150px; display: flex; align-items: center; justify-content: center; color: #555; font-style: italic;">
+                            Waiting for extraction...
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 4. DUAL PREDICTION INTERFACE -->
+            <div style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="color: #fff; margin-bottom: 20px;">Select Diagnostic Module</h3>
+                
+                <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+                    
+                    <!-- Option A: Alzheimer's -->
+                    <div style="flex: 1; min-width: 300px; max-width: 450px;">
+                        <form action="/predict" method="POST">
+                            <input type="hidden" name="filename" value="{{ filename }}">
+                            <button class="cta-button" style="width: 100%; font-size: 18px; padding: 18px 30px; background: linear-gradient(135deg, #ff0080, #ff66b2); box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);">
+                                Run Alzheimer's Analysis <span style="font-size: 20px; vertical-align: middle;">🧠</span>
+                            </button>
+                        </form>
+                        <p style="margin-top: 10px; font-size: 13px; color: #ff66b2;">
+                            Uses Centroid Classifier on Alpha/Coherence
+                        </p>
+                    </div>
+
+                    <!-- Option B: Depression -->
+                    <div style="flex: 1; min-width: 300px; max-width: 450px;">
+                        <form action="/predict_depression" method="POST">
+                            <input type="hidden" name="filename" value="{{ filename }}">
+                            <button class="cta-button" style="width: 100%; font-size: 18px; padding: 18px 30px; background: linear-gradient(135deg, #F7931E, #FFBC6B); box-shadow: 0 0 20px rgba(247, 147, 30, 0.3);">
+                                Run Depression Analysis <span style="font-size: 20px; vertical-align: middle;">🧩</span>
+                            </button>
+                        </form>
+                        <p style="margin-top: 10px; font-size: 13px; color: #FFBC6B;">
+                            Uses Frontal Alpha Asymmetry Index
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p class="copyright">© 2025 NeuroDetect Project</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/templatemo-graph-script.js') }}"></script>
+</body>
+</html>

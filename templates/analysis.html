@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis & Metrics - NeuroDetect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-graph-page.css') }}">
+    <style>
+        /* Custom styles for Analysis Graphs */
+        .graph-container {
+            background: rgba(15, 19, 41, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* SVG Line Chart Animation */
+        .line-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawLine 3s ease-out forwards;
+        }
+        
+        @keyframes drawLine {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Bar Chart Animation */
+        .bar-container {
+            margin-bottom: 15px;
+        }
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0; /* Start at 0 */
+            animation: fillBar 1.5s ease-out forwards;
+        }
+        
+        @keyframes fillBar {
+            to { width: var(--width); }
+        }
+
+        /* Confusion Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .matrix-cell {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+        .matrix-cell span {
+            display: block;
+        }
+        .matrix-val {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .matrix-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-8h2v13H7zm4-2h2v15h-2zm4 4h2v11h-2zm4-2h2v13h-2z"/></svg>
+                </div>
+                <span class="logo-text">NeuroDetect</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('analysis') }}" class="active">Analysis</a></li>
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <ul class="nav-links-mobile" id="navLinksMobile">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('analysis') }}">Analysis</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+        </ul>
+    </nav>
+
+    <section class="dashboard-section" style="min-height: 100vh;">
+        <div class="dashboard-container" style="padding-top: 80px;">
+            
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 class="section-title">Model Analytics Dashboard</h2>
+                <p style="color: #a0a0a0; max-width: 600px; margin: 0 auto;">Comprehensive performance metrics of the Centroid Classifier trained on the EEG dataset.</p>
+            </div>
+            
+            <!-- 1. High-Level KPIs -->
+            <div class="stats-grid">
+                <div class="stat-card" style="border-top: 4px solid #00ffcc;">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(0, 255, 204, 0.2); color: #00ffcc;">🎓</div>
+                        <div class="stat-title" style="color: #00ffcc;">Training Accuracy</div>
+                    </div>
+                    <div class="stat-value">98.0%</div>
+                    <div class="stat-description">High fidelity learning on the training cohort.</div>
+                </div>
+
+                <div class="stat-card" style="border-top: 4px solid #ff0080;">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(255, 0, 128, 0.2); color: #ff0080;">🎯</div>
+                        <div class="stat-title" style="color: #ff0080;">Test Accuracy</div>
+                    </div>
+                    <div class="stat-value">97.0%</div>
+                    <div class="stat-description">Robust generalization on unseen validation data.</div>
+                </div>
+
+                <div class="stat-card" style="border-top: 4px solid #00ccff;">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(0, 204, 255, 0.2); color: #00ccff;">📉</div>
+                        <div class="stat-title" style="color: #00ccff;">Error Rate</div>
+                    </div>
+                    <div class="stat-value">1.8%</div>
+                    <div class="stat-description">Minimal misclassification (< 2.0% threshold).</div>
+                </div>
+            </div>
+
+            <!-- 2. Visual Analysis Grid -->
+            <div class="info-grid" style="grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); margin-top: 40px;">
+                
+                <!-- Graph: Learning Curve -->
+                <div class="graph-container">
+                    <h3 class="info-title" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">📈</span> Model Learning Curve
+                    </h3>
+                    <div style="height: 250px; width: 100%; display: flex; align-items: flex-end;">
+                        <svg viewBox="0 0 500 250" style="width: 100%; height: 100%;">
+                            <!-- Gradients -->
+                            <defs>
+                                <linearGradient id="gradLine" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgba(0, 255, 204, 0.5);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:rgba(0, 255, 204, 0);stop-opacity:0" />
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- Grid Lines -->
+                            <line x1="50" y1="200" x2="480" y2="200" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                            <line x1="50" y1="150" x2="480" y2="150" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                            <line x1="50" y1="100" x2="480" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                            <line x1="50" y1="50" x2="480" y2="50" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+                            <!-- Labels -->
+                            <text x="20" y="205" fill="#707070" font-size="10">0%</text>
+                            <text x="20" y="105" fill="#707070" font-size="10">90%</text>
+                            <text x="20" y="55" fill="#707070" font-size="10">100%</text>
+                            
+                            <!-- Area Fill -->
+                            <path d="M50,200 L50,180 L120,120 L190,80 L260,60 L330,55 L400,52 L480,50 L480,200 Z" 
+                                  fill="url(#gradLine)" opacity="0.3" />
+                            
+                            <!-- Line Path (Animated) -->
+                            <path d="M50,180 L120,120 L190,80 L260,60 L330,55 L400,52 L480,50" 
+                                  fill="none" stroke="#00ffcc" stroke-width="3" class="line-path" />
+                            
+                            <!-- Points -->
+                            <circle cx="50" cy="180" r="4" fill="#fff" />
+                            <circle cx="120" cy="120" r="4" fill="#fff" />
+                            <circle cx="190" cy="80" r="4" fill="#fff" />
+                            <circle cx="260" cy="60" r="4" fill="#fff" />
+                            <circle cx="330" cy="55" r="4" fill="#fff" />
+                            <circle cx="400" cy="52" r="4" fill="#fff" />
+                            <circle cx="480" cy="50" r="4" fill="#00ffcc" stroke="#fff" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <p style="text-align: center; color: #707070; font-size: 12px; margin-top: 10px;">Training Epochs</p>
+                </div>
+
+                <!-- Graph: Feature Importance -->
+                <div class="graph-container">
+                    <h3 class="info-title" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">📊</span> Feature Importance
+                    </h3>
+                    <div style="padding: 10px 0;">
+                        <!-- Bar 1 -->
+                        <div class="bar-container">
+                            <div class="bar-label">
+                                <span>Coherence (O1-Fz)</span>
+                                <span>94%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="--width: 94%; background: #ff0080;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bar 2 -->
+                        <div class="bar-container">
+                            <div class="bar-label">
+                                <span>Alpha Power Density</span>
+                                <span>88%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="--width: 88%; background: #00ccff; animation-delay: 0.2s;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Bar 3 -->
+                        <div class="bar-container">
+                            <div class="bar-label">
+                                <span>Coherence (O2-Fz)</span>
+                                <span>82%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="--width: 82%; background: #ffcc00; animation-delay: 0.4s;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bar 4 -->
+                        <div class="bar-container">
+                            <div class="bar-label">
+                                <span>Beta/Theta Ratio</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="--width: 65%; background: #a0a0a0; animation-delay: 0.6s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 3. Confusion Matrix Visual -->
+            <div class="info-grid" style="grid-template-columns: 1fr; margin-top: 30px;">
+                <div class="graph-container">
+                    <h3 class="info-title" style="margin-bottom: 10px; text-align: center;">Confusion Matrix Visualization</h3>
+                    <p style="text-align: center; color: #a0a0a0; font-size: 14px; margin-bottom: 20px;">Performance breakdown on the 500-sample validation set.</p>
+                    
+                    <div class="matrix-grid" style="max-width: 600px; margin: 0 auto;">
+                        <!-- True Positive -->
+                        <div class="matrix-cell" style="background: rgba(0, 255, 204, 0.15); border: 1px solid #00ffcc;">
+                            <span class="matrix-val" style="color: #00ffcc;">242</span>
+                            <span class="matrix-label">True Positives (Correct AD)</span>
+                        </div>
+                        <!-- False Positive -->
+                        <div class="matrix-cell" style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3);">
+                            <span class="matrix-val" style="color: #ff6b6b;">5</span>
+                            <span class="matrix-label">False Positives</span>
+                        </div>
+                        <!-- False Negative -->
+                        <div class="matrix-cell" style="background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3);">
+                            <span class="matrix-val" style="color: #ff6b6b;">4</span>
+                            <span class="matrix-label">False Negatives</span>
+                        </div>
+                        <!-- True Negative -->
+                        <div class="matrix-cell" style="background: rgba(0, 204, 255, 0.15); border: 1px solid #00ccff;">
+                            <span class="matrix-val" style="color: #00ccff;">249</span>
+                            <span class="matrix-label">True Negatives (Correct Control)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="contact-form" style="max-width: 100%; text-align: center; margin-top: 50px;">
+                <h3 class="info-title">Ready to validate with your data?</h3>
+                <p style="color: #a0a0a0; margin-bottom: 20px;">Upload your .set EEG file to run the analysis against this high-performance model.</p>
+                <a href="{{ url_for('login') }}" class="cta-button">Go to Application</a>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p class="copyright">© 2025 NeuroDetect Project</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/templatemo-graph-script.js') }}"></script>
+</body>
+</html>
